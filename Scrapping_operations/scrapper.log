@@ -1,0 +1,18 @@
+12/09/2022 09:42:05 AM - INFO - Logging.Customlogger : Setting the chrome options
+12/09/2022 09:42:06 AM - INFO - Logging.Customlogger : Setting the chrome options
+12/09/2022 09:42:10 AM - INFO - Logging.Customlogger : Setting the chrome options
+12/09/2022 09:42:11 AM - INFO - Logging.Customlogger : opening the url
+12/09/2022 09:42:13 AM - INFO - Logging.Customlogger : Goto Courses tab
+12/09/2022 09:42:35 AM - INFO - Logging.Customlogger : See more Option
+12/09/2022 09:42:35 AM - INFO - Logging.Customlogger : Getting the course links
+12/09/2022 09:42:36 AM - ERROR - Logging.Customlogger : 'list' object cannot be interpreted as an integer
+Traceback (most recent call last):
+  File "C:\Users\nswet\PycharmProjects\Webscrapper_Ineuron\Scrapping_operations\webscrapper.py", line 135, in tick_categories
+    for box in range(list_categories):
+TypeError: 'list' object cannot be interpreted as an integer
+12/09/2022 09:42:36 AM - INFO - Logging.Customlogger : List of course links received
+12/09/2022 09:42:36 AM - ERROR - Logging.Customlogger : 'NoneType' object is not iterable
+Traceback (most recent call last):
+  File "C:\Users\nswet\PycharmProjects\Webscrapper_Ineuron\Scrapping_operations\webscrapper.py", line 157, in get_course_categories_and_links
+    for each_df in links_list:
+TypeError: 'NoneType' object is not iterable
