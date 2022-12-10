@@ -1,0 +1,28 @@
+12/09/2022 09:52:15 PM - INFO - Scrapping_operations.webscrapper : opening the url
+12/09/2022 09:52:25 PM - INFO - Scrapping_operations.webscrapper : See more Option clicked
+12/09/2022 09:52:25 PM - INFO - Scrapping_operations.webscrapper : Getting the course links
+12/09/2022 09:52:25 PM - INFO - Scrapping_operations.webscrapper : selecting the category APTITUDE 
+12/09/2022 09:52:25 PM - INFO - Scrapping_operations.webscrapper : scrolling down
+12/09/2022 09:52:30 PM - INFO - Scrapping_operations.webscrapper : scrolled down
+12/09/2022 09:52:34 PM - INFO - Scrapping_operations.webscrapper : scrolling up
+12/09/2022 09:52:34 PM - INFO - Scrapping_operations.webscrapper : scrolled_up
+12/09/2022 09:52:34 PM - INFO - Scrapping_operations.webscrapper : selecting the category AR VR 
+12/09/2022 09:52:34 PM - INFO - Scrapping_operations.webscrapper : scrolling down
+12/09/2022 09:52:35 PM - INFO - Scrapping_operations.webscrapper : scrolled down
+12/09/2022 09:52:39 PM - INFO - Scrapping_operations.webscrapper : scrolling up
+12/09/2022 09:52:39 PM - INFO - Scrapping_operations.webscrapper : scrolled_up
+12/09/2022 09:52:39 PM - INFO - Scrapping_operations.webscrapper : List of course links received
+12/09/2022 09:52:39 PM - INFO - Scrapping_operations.webscrapper : The output folder exists
+12/09/2022 09:52:39 PM - INFO - Scrapping_operations.webscrapper : saving the links to an excel
+12/09/2022 09:52:39 PM - INFO - Scrapping_operations.webscrapper : Parsing the course data
+12/09/2022 09:52:39 PM - INFO - Scrapping_operations.webscrapper :  Opening https://ineuron.ai//course/Pro-Java-Programming-Language
+12/09/2022 09:52:48 PM - INFO - Scrapping_operations.webscrapper : executed the course data method
+12/09/2022 09:52:48 PM - INFO - Scrapping_operations.webscrapper :  Opening https://ineuron.ai//course/Pro-Aptitude---C++
+12/09/2022 09:52:56 PM - INFO - Scrapping_operations.webscrapper : executed the course data method
+12/09/2022 09:52:56 PM - INFO - Scrapping_operations.webscrapper : The output folder exists
+12/09/2022 09:52:56 PM - INFO - Scrapping_operations.webscrapper : saving the Summary to an excel
+12/09/2022 09:52:56 PM - ERROR - Scrapping_operations.webscrapper : list indices must be integers or slices, not str
+Traceback (most recent call last):
+  File "C:\Users\nswet\PycharmProjects\Webscrapper_Ineuron\Scrapping_operations\webscrapper.py", line 223, in get_course_data_summary
+    name = course_data_list['Category'][0]
+TypeError: list indices must be integers or slices, not str
