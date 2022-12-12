@@ -9,38 +9,34 @@ from selenium.webdriver.chrome.options import Options
 import time
 from bs4 import BeautifulSoup as bs
 from Logging.Customlogger import class_customlogger
-
-
-def set_chrome_options():
-    try:
-        # self.log.info("Setting the chrome options")
-        # create an object of chrome class
-        chrome_options = Options()
-        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        chrome_options.add_experimental_option("excludeSwitches", ["--disable - popup - blocking"])
-        chrome_options.set_capability("pageLoadStrategy", "eager")
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-gpu")
-        # path of chrome driver
-        # Creates a new instance of the chrome driver.
-        # Starts the service and then creates new instance of chrome driver.
-        # Controls the ChromeDriver and allows you to drive the browser.
-        return chrome_options
-    except Exception as e:
-        pass
-        # self.log.exception(e)
+from db_connection.Databaseoperations import Mongodb_operations
 
 
 class scrapper:
 
-    def __init__(self):
+    def __init__(self, db_operation_obj: Mongodb_operations):
         self.log = class_customlogger.custom_logger_fn(logger_name=__name__, logLevel=logging.DEBUG,
                                                        log_filename="scrapper.log")
         self.url = "https://ineuron.ai/courses"
         self.course_data_main = []
         self.course_links_main = []
         self.path = './chromedriver.exe'
-        self.driver = webdriver.Chrome(executable_path=self.path, options=set_chrome_options())
+        self.driver = webdriver.Chrome(executable_path=self.path, options=self.set_chrome_options())
+        self.db_operation_obj = db_operation_obj
+        self.course_summary = {
+            "Course_Category": "",
+            "Course_Subcategory": "",
+            "Course_Title": "",
+            "Course_Description": "",
+
+            "Course_Instructor_Details": [],
+
+            "Course_Fee": "",
+            "Course_Requirements": [],
+            "Course_Features": [],
+            "Course_Learnings": [],
+            "Course_Curriculum": []
+        }
 
     def scroll_down(self):
         try:
@@ -86,7 +82,7 @@ class scrapper:
             checkboxes_label = '//*[@id="' + '__next"]/div[1]/section[3]/div/div/div[1]/div[2]/div[1]/div[2]/div/label'
             num_checkboxes = len(self.driver.find_elements_by_xpath(checkboxes_label))
             list_categories = [i.text for i in self.driver.find_elements_by_xpath(checkboxes_label)]
-            for box in range(2):
+            for box in range(num_checkboxes):
                 # for box in range(2):
                 self.log.info(f"selecting the category {list_categories[box]} ")
                 self.driver.find_elements_by_xpath(checkboxes_label)[box].click()
@@ -124,7 +120,7 @@ class scrapper:
         except Exception as e:
             self.log.exception(e)
 
-    def open_url(self):
+    def open_urlopen_url(self):
         try:
             self.log.info("opening the url")
             self.driver.get(self.url)
@@ -138,91 +134,161 @@ class scrapper:
         except Exception as e:
             self.log.exception(e)
 
+    def get_final_set_links(self, list_course_links):
+        links_present_in_db = []
+
+        for i in self.db_operation_obj.collection.find({}, {'_id': 1}):
+            links_present_in_db.extend(list(i.values()))
+
+        common_links = set(list_course_links).intersection(set(links_present_in_db))
+
+        if(len(common_links)>0):
+            self.log.info(f"{len(common_links)}:links are already present in db")
+            self.log.info(f"These links are already present in db {common_links}")
+            links_not_present_in_db = list(set(list_course_links) - set(links_present_in_db)) + list(set(links_present_in_db) - set(list_course_links))
+            self.log.info(f"{len(links_not_present_in_db)}links are not present in db")
+            self.log.info(f"These links are not present in db {links_not_present_in_db}")
+        else:
+            links_not_present_in_db=list_course_links
+            self.log.info(f"{len(links_not_present_in_db)}: links are not present in db")
+            self.log.info(f"These links are not present in db {links_not_present_in_db}")
+        return links_not_present_in_db
+
     def parse_course_links(self, list_course_links):
 
-        self.log.info("Parsing the course data")
-        for i in range(len(list_course_links)):
-            # append the present url to the course links
-            self.log.info(f" Opening {list_course_links[i]}")
-            self.driver.get(list_course_links[i])
-            time.sleep(6)
-            # close the pop-up by clicking on the cross button
-            self.driver.find_element_by_xpath('//*[@id="' + 'Modal_enquiry-modal__yC3YI"]/div/div[1]/i').click()
-            # click on view more button in the course curriculum
-            try:
-                # if view more exists click else pass
-                self.driver.find_element_by_class_name('CurriculumAndProjects_view-more-btn__iZ72A').click()
-            except:
-                pass
-            else:
-                pass
-            # After checking the view button and clicking it execute the final block
-            finally:
-                course_summary = {
-                    "course_id": "",
-                    "Category": "",
-                    "Subcategory": "",
-                    "Title": "",
-                    "Description": "",
-                    "Instructor_Name": [],
-                    "Instructor_Details": [],
-                    "Fee": "",
-                    "Requirements": [],
-                    "Course_Features": [],
-                    "Course_Curriculum": []
-                }
+        links_not_present_in_db = self.get_final_set_links(list_course_links)
 
-                # category and subcategory
-                cat_and_subcat = (
-                    self.driver.find_element_by_class_name("Hero_course-category-breadcrumb__9wzAH")).text.split(">")
-                course_summary["Category"] = cat_and_subcat[0]
-                course_summary["Subcategory"] = cat_and_subcat[1]
-                course_summary["Title"] = self.driver.find_element_by_class_name("Hero_course-title__4JX81").text
-                course_summary["Description"] = self.driver.find_element_by_class_name("Hero_course-desc__lcACM").text
-                # there could be multiple instructors for a course so adding them to a list
-                course_summary["Instructor_Name"] = [i.text.split("\n")[0] for i in
-                                                     self.driver.find_elements_by_class_name(
-                                                         "InstructorDetails_left__nVSdv")]
-                course_summary["Instructor_Details"] = [i.text.split("\n")[1] for i in
-                                                        self.driver.find_elements_by_class_name(
-                                                            "InstructorDetails_left__nVSdv")]
-
+        if len(links_not_present_in_db) > 0:
+            self.log.info("Parsing the course data")
+            for i in range(len(links_not_present_in_db)):
+                # append the present url to the course links
+                self.log.info(f" Opening {links_not_present_in_db[i]}")
+                self.driver.get(links_not_present_in_db[i])
+                self.driver.maximize_window()
+                time.sleep(8)
+                # close the pop-up by clicking on the cross button
+                # self.driver.find_element_by_xpath('//*[@id="' + 'Modal_enquiry-modal__yC3YI"]/div/div[1]/i').click()
+                self.driver.find_element_by_xpath('// *[@id = "Modal_enquiry-modal__yC3YI"]/ iv/div[1]/i').click()
+                # click on view more button in the course curriculum
                 try:
-                    course_summary["Fee"] = self.driver.find_elements_by_xpath("CoursePrice_price__YLG0U")[
-                        0].text.split(
-                        "\n")
+                    # if view more exists click else pass
+                    self.driver.find_element_by_class_name('CurriculumAndProjects_view-more-btn__iZ72A').click()
                 except:
-                    course_summary["Fee"] = self.driver.find_element_by_xpath(
-                        '//*[@id="__next"]/section[3]/div/div/div[2]/div[1]/div[1]').text
+                    pass
+                # After checking the view button and clicking it execute the final block
+                finally:
+                    details_of_page_bs = bs(self.driver.page_source, "html.parser")
 
-                course_summary["Requirements"] = self.driver.find_element_by_xpath(
-                    '//*[@id="__next"]/section[3]/div/div/div[1]/div[2]').text.split("\n")[1:]
-                course_summary["Course_Features"] = self.driver.find_element_by_class_name(
-                    'CoursePrice_course-features__IBpSY').text.split("\n")[1:]
-                Course_Curriculum = self.driver.find_element_by_xpath(
-                    '//*[@id="__next"]/section[3]/div/div/div[1]/div[3]').text.split("\n")[1:]
-                course_summary["Course_Curriculum"] = [course for course in Course_Curriculum if
-                                                       course not in (['View More', 'View Less'])]
-            self.course_data_main.append(course_summary)
-            self.log.info("executed the course data method")
-        return self.course_data_main
+                    # Course headings and description
+                    try:
+                        self.course_summary["_id"] = links_not_present_in_db[i]
+                        header = details_of_page_bs.find_all("div", {"class": "Hero_left__GNJBa"})
+                        category_subcategory = [i.text for i in header[0].find_all('span')]
+                        title = header[0].find('h3').text
+                        description = header[0].find("div",{"class" : "Hero_course-desc__lcACM"}).text
+                        self.course_summary["Course_Category"] = category_subcategory[0]
+                        self.course_summary["Course_Subcategory"] = category_subcategory[1]
+                        self.course_summary["Course_Title"] = title
+                        self.course_summary["Course_Description"] = description
+                    except Exception as e:
+                        self.log.error(e)
 
-    def get_course_data_summary(self, list_course_links):
+                    # Price details
+                    try:
+                        # Price details part of a package
+                        Price_details = details_of_page_bs.find_all("div", {"class": "CoursePrice_no-cost-emi__Ve__2 text-center"})
+                        self.course_summary["Course_Fee"] = Price_details[0].text
+                    except:
+                        # Price details mentioned directly
+                        Price_details = details_of_page_bs.find_all("div", {"class": "CoursePrice_dis-price__Rz6Iz"})
+                        self.course_summary["Course_Fee"] = Price_details[0].text
 
+                    # Learnings
+                    try:
+                        learnings = details_of_page_bs.find_all("div", {"class": "CourseLearning_card__0SWov card"})
+                        learning_topics_list = [i.text for i in learnings[0].findAll("li")]
+                        self.course_summary["Course_Learnings"] = learning_topics_list
+                    except Exception as e:
+                        self.log.error(e)
+
+                    # Requirements
+                    try:
+                        requirements = details_of_page_bs.find_all("div", {"class": "CourseRequirement_card__lKmHf requirements card"})
+                        requirements_list = [i.text for i in requirements[0].findAll("li")]
+                        self.course_summary["Course_Requirements"] = requirements_list
+                    except Exception as e:
+                        self.log.error(e)
+
+
+                    #Course Curriculum
+
+                    #Course curriculum present in CARD: "CurriculumAndProjects_course-curriculum__C9K5U CurriculumAndProjects_card__rF6YN card"
+                    #it has various divisions and each div have a topic and list of subtopics divs card " CurriculumAndProjects_curriculum-accordion__fI8wj CurriculumAndProjects_card__rF6YN card"
+                    #Topics: CARD: "CurriculumAndProjects_accordion-header__ux_yj CurriculumAndProjects_flex__KmWUD flex"
+                    #Subtopics list : CARD "CurriculumAndProjects_accordion-body__qQaIR"
+
+                    try:
+                        curriculum = details_of_page_bs.find_all("div", {"class": "CurriculumAndProjects_course-curriculum__C9K5U CurriculumAndProjects_card__rF6YN card"})
+                        curriculum_main_list = []
+                        for each_div in curriculum[0].find_all("div", {"class": "CurriculumAndProjects_curriculum-accordion__fI8wj CurriculumAndProjects_card__rF6YN card"}):
+                            topics = each_div.find("div", {"class","CurriculumAndProjects_accordion-header__ux_yj CurriculumAndProjects_flex__KmWUD flex"})
+                            subtopic = each_div.find("div", {"class", "CurriculumAndProjects_accordion-body__qQaIR"})
+                            subheadings = [sub.text for sub in subtopic.find_all("li")]
+                            curriculum_main_list.append({topics.text: subheadings})
+                        self.course_summary["Course_Curriculum"]=curriculum_main_list
+                    except Exception as e:
+                        self.log.error(e)
+
+
+                    #Instructor Details
+
+                    try:
+
+                        Instructor_details = details_of_page_bs.find_all("div", {"class": "InstructorDetails_mentor__P07Cj InstructorDetails_card__mwVrB InstructorDetails_flex__g8BFa card flex"})
+                        Instructors_list=[]
+                        for each_div in Instructor_details:
+                            Instructor_details_left = each_div.find("div", {"class": "InstructorDetails_left__nVSdv"})
+                            Instructor_name = Instructor_details_left.find("h5").text
+                            Instructor_experience = Instructor_details_left.find("p").text
+                            Instructor_Social_links = each_div.find("div", {"class": "InstructorDetails_social-links__kuwma InstructorDetails_flex__g8BFa flex"})
+                            links = [i["href"] for i in Instructor_Social_links.find_all("a")]
+                            Instructors_list.append({"Name":Instructor_name,
+                                                     "Description":Instructor_experience,
+                                                    "Social Links":links})
+
+                        self.course_summary["Course_Instructor_Details"] = Instructors_list
+                    except Exception as e:
+                        self.log.error(e)
+
+                    #Course Features
+                        try:
+                            features = details_of_page_bs.find_all("div", {"class": "CoursePrice_course-features__IBpSY"})
+                            features_list = [li_tag.text for li_tag in features[0].find_all('li')]
+                            self.course_summary['Course_Features'] = features_list
+                        except Exception as e:
+                            self.log.error(e)
+
+                self.course_data_main.append(self.course_summary)
+                self.log.info("executed the course data method")
+                self.db_operation_obj.insert_data(self.course_data_main[i])
+            return self.course_data_main
+        else:
+            self.log.info("All the links are present in db")
+
+    def set_chrome_options(self):
         try:
-            course_data_list = self.parse_course_links(list_course_links)
-            course_data_df = pd.DataFrame()
-            if not os.path.exists("Output"):
-                self.log.info("The output folder doesnt exists")
-                self.log.info("Creating the output folder")
-                os.mkdir("output")
-            else:
-                self.log.info("The output folder exists")
-            for each_df in course_data_list:
-                self.log.info("saving the Summary to an excel")
-                name =
-                course_data_df.to_excel(f'.\output\{name}.xlsx', sheet_name=name, index=None)
-
-            return course_data_df
+            self.log.info("Setting the chrome options")
+            # create an object of chrome class
+            chrome_options = Options()
+            chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            chrome_options.add_experimental_option("excludeSwitches", ["--disable - popup - blocking"])
+            chrome_options.set_capability("pageLoadStrategy", "eager")
+            chrome_options.add_argument("--disable-extensions")
+            chrome_options.add_argument("--disable-gpu")
+            # path of chrome driver
+            # Creates a new instance of the chrome driver.
+            # Starts the service and then creates new instance of chrome driver.
+            # Controls the ChromeDriver and allows you to drive the browser.
+            return chrome_options
         except Exception as e:
             self.log.exception(e)
