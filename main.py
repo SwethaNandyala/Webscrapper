@@ -10,26 +10,40 @@ from bson.json_util import dumps
 app = Flask(__name__)
 
 
-@app.route('/', methods=['GET','POST'])  # route to display the home page
-@cross_origin()
+@app.route('/', methods=['GET', 'POST'])  # route to display the home page
+# @cross_origin()
 def homePage():
     db_operation = Mongodb_operations(db_name="ineuron_courses")
     db_operation.get_or_create_collection("Coursedata_Summary")
+    log_main = class_customlogger.custom_logger_fn(logger_name=__name__, logLevel=logging.DEBUG,
+                                                   log_filename="main.log")
+
+    # POST method expects a query/condition to filterout the data from db
 
     if request.method == 'POST':
-        filtered_data=[]
-        condition = request.json['query']
-        for i in db_operation.filter_data_from_db(condition):
-            filtered_data.append(i)
+        try:
+            log_main.info(f"Home page fetching results based on the {request.json['query']}")
+            filtered_data = []
+            condition = request.json['query']
+            for i in db_operation.filter_data_from_db(condition):
+                filtered_data.append(i)
 
-        return dumps(filtered_data)
+            return dumps(filtered_data)
 
+        except Exception as e:
+            log_main.error(e)
+    # GET method RETURNS all the data from db
     else:
-        li = []
-        for i in db_operation.get_all_data_from_db():
-            li.append(i)
+        try:
+            log_main.info("Home page fetching all the data")
+            complete_data = []
+            for i in db_operation.get_all_data_from_db():
+                complete_data.append(i)
+            return dumps(complete_data)
 
-        return dumps(li)
+        except Exception as e:
+            log_main.error(e)
+
 
 class main_page(scrapper):
     def __init__(self):
