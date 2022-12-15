@@ -13,12 +13,17 @@ app = Flask(__name__)
 @app.route('/', methods=['GET', 'POST'])  # route to display the home page
 # @cross_origin()
 def homePage():
+
+    #when the app runs the application executes the connection to database and checks if the
+    #specified collection exits
+    #if the collection exists the data is fetched from the database
+
     db_operation = Mongodb_operations(db_name="ineuron_courses")
     db_operation.get_or_create_collection("Coursedata_Summary")
     log_main = class_customlogger.custom_logger_fn(logger_name=__name__, logLevel=logging.DEBUG,
                                                    log_filename="main.log")
 
-    # POST method expects a query/condition to filterout the data from db
+    # POST method expects a query/condition to filter the data from db
 
     if request.method == 'POST':
         try:
@@ -32,7 +37,9 @@ def homePage():
 
         except Exception as e:
             log_main.error(e)
-    # GET method RETURNS all the data from db
+
+    # GET method RETURNS/retrieves all the data from db
+
     else:
         try:
             log_main.info("Home page fetching all the data")
@@ -47,16 +54,19 @@ def homePage():
 
 class main_page(scrapper):
     def __init__(self):
-        self.log_main = class_customlogger.custom_logger_fn(logger_name=__name__, logLevel=logging.DEBUG,
-                                                            log_filename="main.log")
+        #this class and initialisation was created to get the course links from the courses page
+        #pass the list containing all the links to the parse course links function to get the details about the course.
+        #once all the data from the 457 links was scrapped and uploaded to the "Coursedata_Summary" collection there is no need of this function.
+
+        self.log_main = class_customlogger.custom_logger_fn(logger_name=__name__, logLevel=logging.DEBUG, log_filename="main.log")
         self.log_main.info("Initialising the home settings")
         self.db_operation = Mongodb_operations(db_name="ineuron_courses")
         self.db_operation.get_or_create_collection("Coursedata_Summary")
         sc_obj = scrapper(self.db_operation)
         # links_df = sc_obj.get_course_categories_and_links()
         # course_data_main = sc_obj.parse_course_links(links_df["Course_URL"])
-        # links_df=["https://ineuron.ai/course/Java-Full-Stack-Developer-Course"]
-        # course_data_main = sc_obj.parse_course_links(links_df)
+        links_df=["https://ineuron.ai/course/C-language-for-Absolute-Beginners"]
+        course_data_main = sc_obj.parse_course_links(links_df)
 
 
 if __name__ == "__main__":

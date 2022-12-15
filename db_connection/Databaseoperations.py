@@ -59,9 +59,8 @@ class Mongodb_operations(Mongodb_connection):
     def get_all_data_from_db(self):
         try:
             self.log_crud.info("Executing get_all_data_from_db method")
+            self.log_crud.info("Retrieving data..")
             data = self.collection.find()
-            # for i in data:
-            self.log_crud.info("data sample showing: " + str(data[0]))
             return data
         except Exception as e:
             self.log_crud.error(e)
@@ -70,13 +69,14 @@ class Mongodb_operations(Mongodb_connection):
 
     def filter_data_from_db(self, condition: dict):
         try:
+            self.log_crud.info("Executing filter_data_from_db method")
+            self.log_crud.info("Retrieving data...")
             data = self.collection.find(condition)
-            self.log_crud.info("data sample showing: " + str(data[0]))
             return data
         except Exception as e:
             self.log_crud.error(e)
         else:
-            self.log_crud.info("retrieved all data")
+            self.log_crud.info("filtered all data based on query")
 
     def delete_data(self, query, many=False):
         """

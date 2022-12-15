@@ -28,9 +28,7 @@ class scrapper:
             "Course_Subcategory": "",
             "Course_Title": "",
             "Course_Description": "",
-
             "Course_Instructor_Details": [],
-
             "Course_Fee": "",
             "Course_Requirements": [],
             "Course_Features": [],
@@ -52,6 +50,7 @@ class scrapper:
                 # Calculate new scroll height and compare with last scroll height
                 new_height = self.driver.execute_script("return document.body.scrollHeight")
                 if new_height == last_height:
+                    #no more data is present to scroll down
                     break
                 last_height = new_height
             self.log.info("scrolled down")
@@ -165,10 +164,11 @@ class scrapper:
                 self.log.info(f" Opening {links_not_present_in_db[i]}")
                 self.driver.get(links_not_present_in_db[i])
                 self.driver.maximize_window()
-                time.sleep(8)
+                time.sleep(4)
                 # close the pop-up by clicking on the cross button
                 # self.driver.find_element_by_xpath('//*[@id="' + 'Modal_enquiry-modal__yC3YI"]/div/div[1]/i').click()
-                self.driver.find_element_by_xpath('// *[@id = "Modal_enquiry-modal__yC3YI"]/ iv/div[1]/i').click()
+                # self.driver.find_element_by_xpath('// *[ @ id = "Modal_enquiry-modal__yC3YI"] / div / div[1] / i').click()
+
                 # click on view more button in the course curriculum
                 try:
                     # if view more exists click else pass
@@ -178,7 +178,6 @@ class scrapper:
                 # After checking the view button and clicking it execute the final block
                 finally:
                     details_of_page_bs = bs(self.driver.page_source, "html.parser")
-
                     # Course headings and description
                     try:
                         self.course_summary["_id"] = links_not_present_in_db[i]
