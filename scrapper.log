@@ -1,1 +1,6 @@
-12/12/2022 01:15:56 PM - INFO - Scrapping_operations.webscrapper : Setting the chrome options
+12/15/2022 09:37:43 AM - INFO - Scrapping_operations.webscrapper : Setting the chrome options
+12/15/2022 09:37:45 AM - INFO - Scrapping_operations.webscrapper : 1: links are not present in db
+12/15/2022 09:37:45 AM - INFO - Scrapping_operations.webscrapper : These links are not present in db ['https://ineuron.ai/course/C-language-for-Absolute-Beginners']
+12/15/2022 09:37:45 AM - INFO - Scrapping_operations.webscrapper : Parsing the course data
+12/15/2022 09:37:45 AM - INFO - Scrapping_operations.webscrapper :  Opening https://ineuron.ai/course/C-language-for-Absolute-Beginners
+12/15/2022 09:37:55 AM - INFO - Scrapping_operations.webscrapper : executed the course data method

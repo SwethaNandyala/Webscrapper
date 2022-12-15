@@ -1,4 +1,8 @@
-12/13/2022 10:09:58 AM - INFO - db_connection.CreateDBConnections : Successfully connected with mongodb
-12/13/2022 10:09:58 AM - INFO - db_connection.CreateDBConnections : Executing Creating a Database method
-12/13/2022 10:09:58 AM - INFO - db_connection.CreateDBConnections : Executing Check if a db exists method
-12/13/2022 10:09:59 AM - INFO - db_connection.CreateDBConnections : Database ineuron_courses exists
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Successfully connected with mongodb
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Executing Creating a Database method
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Executing Check if a db exists method
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Database ineuron_courses exists
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Successfully connected with mongodb
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Executing Creating a Database method
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Executing Check if a db exists method
+12/15/2022 09:55:13 AM - INFO - db_connection.CreateDBConnections : Database ineuron_courses exists
