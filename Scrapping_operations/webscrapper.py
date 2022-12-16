@@ -1,7 +1,5 @@
 import logging
 import os.path
-import shutil
-
 from openpyxl import Workbook
 import pandas as pd
 from selenium import webdriver
